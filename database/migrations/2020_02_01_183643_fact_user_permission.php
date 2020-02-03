@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Permissions;
+use App\Models\Role;
+use App\Models\Users;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +16,16 @@ class FactUserPermission extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('fact_permission' , function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->unsignedInteger('permission_id')->nullable();
+
+            // $table->foreign('user_id')->references('id')->on((new Users())->getTable());
+            // $table->foreign('permission_id')->refernces('id')->on((new Role())->getTable());
+
+            $table->timestamps();
+        });
     }
 
     /**
@@ -23,6 +35,6 @@ class FactUserPermission extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('fact_permission');
     }
 }
