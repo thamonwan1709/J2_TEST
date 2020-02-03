@@ -23,8 +23,8 @@ class FactUserPermission extends Migration
 
             // $table->foreign('user_id')->references('id')->on((new Users())->getTable());
             // $table->foreign('permission_id')->refernces('id')->on((new Role())->getTable());
-
             $table->timestamps();
+
         });
     }
 
