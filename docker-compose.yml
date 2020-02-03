@@ -1,0 +1,117 @@
+version: '2.0'
+
+services:
+  node:
+    image: node:alpine
+    container_name: node
+    hostname: node
+
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    command: sh -c "yarn run watch"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+
+  nginx:
+    image: adiwitcoth/nginx
+    container_name: nginx
+    hostname: nginx
+
+    depends_on:
+      - php7
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www/html
+
+  composer:
+    image: adiwitcoth/php:latest
+    container_name: composer
+    hostname: composer
+
+#    user: www-data
+    command: bash -c "composer install && php -r \"file_exists('.env') || copy('.env.example', '.env');\" && php -r \"strpos(file_get_contents('.env'), 'APP_KEY=base64:') || include('artisan');\" key:generate && php artisan migrate && php artisan storage:link && php artisan self-diagnosis"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - redis
+      - mariadb
+      # - postgres
+      # - mssql
+
+  php7:
+    image: adiwitcoth/php:latest
+    container_name: php7
+    hostname: php7
+
+#    user: www-data
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - redis
+      - mariadb
+      # - postgres
+      # - mssql
+
+  redis:
+    image: redis:alpine
+    container_name: redis4
+    hostname: redis
+
+    user: redis
+    command: redis-server --requirepass 88888888
+
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    hostname: mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: "root"
+      MYSQL_ROOT_PASSWORD: "88888888"
+
+  #   volumes:
+  #     - ./_database/mysql:/var/lib/mysql
+
+  # postgres:
+  #   image: postgres:alpine
+  #   container_name: postgres
+  #   hostname: postgres
+  #
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: "adiwitcoth"
+  #     POSTGRES_USER: "postgres"
+  #     POSTGRES_PASSWORD: "88888888"
+  #   volumes:
+  #     - ./_database/postgres:/var/lib/postgresql/data
+
+  # mssql:
+  #   image: mcr.microsoft.com/mssql/server
+  #   container_name: mssql
+  #   hostname: mssql
+  #
+  #   ports:
+  #     - "1433:1433"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "88888888@AdiwIT.co.th"
+  #     MSSQL_PID: "Developer"
+  #   volumes:
+  #     - ./_database/mssql:/var/opt/mssql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    hostname: phpmyadmin
+    ports:
+      - "8888:80"
+    depends_on:
+      - mariadb
+    links:
+      - mariadb:db
